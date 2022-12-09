@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,8 +15,14 @@ public interface BookingDao extends JpaRepository<Booking, Integer> {
             "and b.from_date <= :to " +
             "and b.to_date >= :from",
             nativeQuery = true)
-    List<Booking> checkRoomBusy(@Param("roomName") String roomName, @Param("from") Date from, @Param("to") Date to);
+    List<Booking> checkRoomBusy(@Param("roomName") String roomName, @Param("from") LocalDate from, @Param("to") LocalDate to);
     List<Booking> findAllByClientName(String clientName);
     Optional<Booking> findById(Long bookingId);
+
+    @Query(value = "select c.email from booking b " +
+            "join client c on b.client_name = c.name " +
+            "where c.email = :email limit 1",
+            nativeQuery = true)
+    String findEmailExistedClient(@Param("email") String email);
     void deleteById(Long bookingId);
 }

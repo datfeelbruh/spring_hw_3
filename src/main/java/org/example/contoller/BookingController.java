@@ -3,7 +3,7 @@ package org.example.contoller;
 import lombok.AllArgsConstructor;
 import org.example.dto.BookingDtoRq;
 import org.example.dto.BookingDtoRs;
-import org.example.entities.Booking;
+
 import org.example.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

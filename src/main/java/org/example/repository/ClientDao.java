@@ -2,9 +2,11 @@ package org.example.repository;
 
 import org.example.entities.Client;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.util.Optional;
 
 public interface ClientDao extends JpaRepository<Client, String> {
-    boolean findByName(String name);
+    @Query(value = "select c.email from client c where c.email = :email", nativeQuery = true)
+    String  findByEmail(@Param("email") String email);
 }

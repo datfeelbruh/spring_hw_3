@@ -2,12 +2,12 @@ package org.example.service;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.example.EmailGenerator;
 import org.example.dto.BookingDtoRq;
 import org.example.dto.BookingDtoRs;
 import org.example.entities.Booking;
 import org.example.entities.Client;
 import org.example.mappers.BookingMapper;
+import org.example.mappers.ClientMapper;
 import org.example.repository.BookingDao;
 import org.example.repository.ClientDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class BookingService {
     private BookingDao bookingDao;
     private BookingMapper bookingMapper;
+    private ClientMapper clientMapper;
     private ClientDao clientDao;
     @Transactional
     @SneakyThrows
@@ -36,12 +37,17 @@ public class BookingService {
         if (!busyBookings.isEmpty()) {
             throw new RuntimeException("Номер уже забронирован");
         }
-        bookingDao.save(booking);
 
-        if (checkBookingDaoAndClientDaoOnName(bookingDtoRq.getClientName())) {
-            Client client = new Client(bookingDtoRq.getClientName(), EmailGenerator.generate());
+        if (isNewClient(bookingDtoRq) || isSameEmailAndName(bookingDtoRq)) {
+            Client client = clientMapper.mapFromDto(bookingDtoRq.getClient().getClientName(),
+                    bookingDtoRq.getClient().getEmail());
+
             clientDao.save(client);
+        } else {
+            throw new RuntimeException("Пользователь с таким email уже существует");
         }
+
+        bookingDao.save(booking);
 
         return booking.getId();
     }
@@ -58,20 +64,28 @@ public class BookingService {
     }
 
     @Transactional
-    public Long delete(Long id) {
+    public void delete(Long id) {
         bookingDao.deleteById(id);
-        return id;
     }
 
     public Optional<Booking> getBookingById(Long id) {
         return bookingDao.findById(id);
     }
 
-    private boolean checkBookingDaoAndClientDaoOnName(String name) {
-        boolean isClientBooked = !bookingDao.findAllByClientName(name).isEmpty();
-        boolean isOurClient = clientDao.findAll()
+    private boolean isNewClient(BookingDtoRq bookingDtoRq) {
+        if (clientDao.findByEmail(bookingDtoRq.getClient().getEmail()) == null) {
+            return bookingDao.findEmailExistedClient(bookingDtoRq.getClient().getEmail()) == null;
+        }
+        return false;
+    }
+
+    private boolean isSameEmailAndName(BookingDtoRq bookingDtoRq) {
+        String clientName = clientDao.findAll()
                 .stream()
-                .map(Client::getName).noneMatch(e -> e.equals(name));
-        return isClientBooked && isOurClient;
+                .filter(e -> e.getEmail().equals(bookingDtoRq.getClient().getEmail()))
+                .map(Client::getName)
+                .collect(Collectors.joining());
+
+        return bookingDtoRq.getClient().getClientName().equals(clientName);
     }
 }

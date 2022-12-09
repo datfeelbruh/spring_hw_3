@@ -2,7 +2,8 @@ package org.example.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.util.Date;
+
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -10,9 +11,11 @@ public class BookingDtoRs {
 
     private String roomName;
 
-    private Date fromDate;
+    private LocalDate fromDate;
 
-    private Date toDate;
+    private LocalDate toDate;
 
     private String clientName;
+
+    private String clientEmail;
 }

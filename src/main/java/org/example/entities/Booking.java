@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @RequiredArgsConstructor
@@ -22,14 +21,15 @@ public class Booking {
 
     @Column(nullable = false)
     @NonNull
-    private Date fromDate;
+    private LocalDate fromDate;
 
     @Column(nullable = false)
     @NonNull
-    private Date toDate;
+    private LocalDate toDate;
 
-    @Column(nullable = false)
+    @JoinColumn(name = "client_name", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @NonNull
-    private String clientName;
+    private Client client;
 
 }
